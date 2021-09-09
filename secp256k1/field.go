@@ -13,6 +13,9 @@ func init() {
 	p, _ = saferith.ModulusFromHex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F")
 }
 
+// FieldBytes is the number of bytes in the field.
+const FieldBytes = 32
+
 // Field represents an element in the prime field used by secp256k1.
 //
 // This field is used later to implement point operations on the curve.
@@ -26,6 +29,23 @@ func NewField() *Field {
 	// This will conveniently set the announced size, and mark this number as reduced modulo p.
 	nat.Mod(&nat, p)
 	return &Field{nat: nat}
+}
+
+// Set calculates z <- x, returning z.
+func (z *Field) Set(x *Field) *Field {
+	z.nat.SetNat(&x.nat)
+	return z
+}
+
+// SetUint64 calculates z <- x, returning z.
+func (z *Field) SetUint64(x uint64) *Field {
+	z.nat.SetUint64(x)
+	return z
+}
+
+// String returns a string representation of this field element.
+func (z *Field) String() string {
+	return z.nat.String()
 }
 
 // Add calculates z <- z + a, returning z.
@@ -50,6 +70,11 @@ func (z *Field) Mul(a *Field) *Field {
 func (z *Field) Invert() *Field {
 	z.nat.ModInverse(&z.nat, p)
 	return z
+}
+
+// Eq checks if two field values are equal, in constant-time.
+func (z *Field) Eq(x *Field) saferith.Choice {
+	return z.nat.Eq(&x.nat)
 }
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
