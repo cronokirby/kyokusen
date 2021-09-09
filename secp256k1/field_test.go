@@ -70,3 +70,14 @@ func TestMultiplyInverse(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestSquareIsMultiply(t *testing.T) {
+	err := quick.Check(func(a *Field) bool {
+		way1 := NewField().Set(a).Square()
+		way2 := NewField().Set(a).Mul(a)
+		return way1.Eq(way2) == 1
+	}, &quick.Config{})
+	if err != nil {
+		t.Error(err)
+	}
+}

@@ -66,6 +66,11 @@ func (z *Field) Mul(a *Field) *Field {
 	return z
 }
 
+// Square calculates z <- z * z, returning z.
+func (z *Field) Square() *Field {
+	return z.Mul(z)
+}
+
 // Invert calculates z <- z^-1, returning z.
 func (z *Field) Invert() *Field {
 	z.nat.ModInverse(&z.nat, p)
