@@ -78,6 +78,14 @@ func (z *Field) Mul(a *Field) *Field {
 	return z
 }
 
+// MulU64 calculates z <- z * a, returning z.
+//
+// This is more efficient than Mul.
+func (z *Field) MulU64(a uint64) *Field {
+	z.nat.ModMul(&z.nat, new(saferith.Nat).SetUint64(a), p)
+	return z
+}
+
 // Square calculates z <- z * z, returning z.
 func (z *Field) Square() *Field {
 	return z.Mul(z)

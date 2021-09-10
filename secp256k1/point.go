@@ -2,6 +2,9 @@ package secp256k1
 
 import "github.com/cronokirby/kyokusen"
 
+// The b constant for the elliptic curve
+const b = 7
+
 // Point represents a point on the secp256k1 curve.
 type Point struct {
 	// Internally, we represent this as a projective point (X : Y : Z).
@@ -65,14 +68,59 @@ func (*Point) Curve() kyokusen.Curve {
 	return nil
 }
 
-func (*Point) Add(kyokusen.Point) kyokusen.Point {
-	// TODO: Implement
+func (p1 *Point) Add(other kyokusen.Point) kyokusen.Point {
+	p2 := castPoint(other)
+
+	// This formula is taken from Algorithm 7 of https://eprint.iacr.org/2015/1060.
+	t0 := NewField().Set(p1.x).Mul(p2.x)
+	t1 := NewField().Set(p1.y).Mul(p2.y)
+	t2 := NewField().Set(p1.z).Mul(p2.z)
+
+	t3 := NewField().Set(p1.x).Add(p1.y)
+	t4 := NewField().Set(p2.x).Add(p2.y)
+	t3.Mul(t4)
+
+	t4.Set(t0).Add(t1)
+	t3.Sub(t4)
+	t4.Set(p1.x).Add(p1.z)
+
+	x := NewField().Set(p2.y).Add(p2.z)
+	t4.Mul(x)
+	x.Set(t1).Add(t2)
+
+	t4.Sub(x)
+	x.Set(p1.x).Add(p2.x)
+	y := NewField().Set(p2.x).Add(p2.z)
+
+	x.Mul(y)
+	y.Set(t0).Add(t2)
+	y.Negate().Add(x)
+
+	x.Set(t0).Add(t0)
+	t0.Add(x)
+	t2.MulU64(3 * b)
+
+	z := NewField().Set(t1).Add(t2)
+	t1.Sub(t2)
+	y.MulU64(3 * b)
+
+	x.Mul(t4)
+	t2.Set(t3).Mul(t1)
+	x.Negate().Add(t2)
+
+	y.Mul(t0)
+	t1.Mul(z)
+	y.Add(t1)
+
+	t0.Mul(t3)
+	z.Mul(t4)
+	z.Add(t0)
+
 	return nil
 }
 
-func (*Point) Sub(kyokusen.Point) kyokusen.Point {
-	// TODO: Implement
-	return nil
+func (p *Point) Sub(other kyokusen.Point) kyokusen.Point {
+	return p.Add(other.Negate())
 }
 
 func (p *Point) Negate() kyokusen.Point {
