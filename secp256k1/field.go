@@ -9,8 +9,14 @@ import (
 // p is the modulus for the field used in secp256k1.
 var p *saferith.Modulus
 
+// pDiv2 is (p - 1) / 2, useful for checking if a value has a square root
+var pDiv2 *saferith.Nat
+
 func init() {
-	p, _ = saferith.ModulusFromHex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F")
+	pNat, _ := new(saferith.Nat).SetHex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F")
+	p = saferith.ModulusFromNat(pNat)
+	pNat.Rsh(pNat, 1, p.BitLen())
+	pDiv2 = pNat
 }
 
 // FieldBytes is the number of bytes in the field.
@@ -57,6 +63,14 @@ func (z *Field) String() string {
 // Add calculates z <- z + a, returning z.
 func (z *Field) Add(a *Field) *Field {
 	z.nat.ModAdd(&z.nat, &a.nat, p)
+	return z
+}
+
+// Add calculates z <- z + a, returning z.
+//
+// This may be faster than Add.
+func (z *Field) AddU64(a uint64) *Field {
+	z.nat.ModAdd(&z.nat, new(saferith.Nat).SetUint64(a), p)
 	return z
 }
 
@@ -132,4 +146,17 @@ func (z *Field) UnmarshalBinary(data []byte) error {
 		return errors.New("secp256k1.Field.UnmarshalBinary: value is greater than field prime")
 	}
 	return nil
+}
+
+// HasSqrt checks if a field value has a valid square root.
+func (z *Field) HasSqrt() saferith.Choice {
+	check := new(saferith.Nat).Exp(&z.nat, pDiv2, p)
+	one := new(saferith.Nat).SetUint64(1)
+	return check.Eq(one) | check.EqZero()
+}
+
+// Sqrt calculates z <- sqrt(z), if such a value exists. Otherwise, the result is undefined.
+func (z *Field) Sqrt() *Field {
+	z.nat.ModSqrt(&z.nat, p)
+	return z
 }

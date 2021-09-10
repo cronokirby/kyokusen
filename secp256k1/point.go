@@ -1,6 +1,10 @@
 package secp256k1
 
-import "github.com/cronokirby/kyokusen"
+import (
+	"fmt"
+
+	"github.com/cronokirby/kyokusen"
+)
 
 // The b constant for the elliptic curve
 const b = 7
@@ -51,6 +55,20 @@ func (p *Point) normalize() {
 	p.z.CondAssign(1^zZero, one)
 	// The result is now normalized.
 	p.normalized = true
+}
+
+// NewPoint returns the secp256k1 identity point.
+func NewPoint() *Point {
+	// (0 : 1 : 0) is the point at infinity, in projective coordinates.
+	return &Point{
+		x: NewField(),
+		y: NewField().SetUint64(1),
+		z: NewField(),
+	}
+}
+
+func (p *Point) String() string {
+	return fmt.Sprintf("[%v : %v : %v]", p.x, p.y, p.z)
 }
 
 func (*Point) MarshalBinary() ([]byte, error) {

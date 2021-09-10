@@ -7,7 +7,7 @@ import (
 	"testing/quick"
 )
 
-func (*Field) Generate(r *rand.Rand, size int) reflect.Value {
+func randomFieldElement(r *rand.Rand, size int) *Field {
 	out := NewField()
 	data := make([]byte, FieldBytes)
 	// Fill in a certain number of bytes with zero. Smaller sizes will be closer to zero.
@@ -15,7 +15,11 @@ func (*Field) Generate(r *rand.Rand, size int) reflect.Value {
 		data[len(data)-i-1] = byte(r.Uint32())
 	}
 	_ = out.UnmarshalBinary(data)
-	return reflect.ValueOf(out)
+	return out
+}
+
+func (*Field) Generate(r *rand.Rand, size int) reflect.Value {
+	return reflect.ValueOf(randomFieldElement(r, size))
 }
 
 func TestFieldAdditionCommutative(t *testing.T) {
