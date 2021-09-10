@@ -100,14 +100,14 @@ func (p1 *Point) Add(other kyokusen.Point) kyokusen.Point {
 
 	t4.Set(t0).Add(t1)
 	t3.Sub(t4)
-	t4.Set(p1.x).Add(p1.z)
+	t4.Set(p1.y).Add(p1.z)
 
 	x := NewField().Set(p2.y).Add(p2.z)
 	t4.Mul(x)
 	x.Set(t1).Add(t2)
 
 	t4.Sub(x)
-	x.Set(p1.x).Add(p2.x)
+	x.Set(p1.x).Add(p1.z)
 	y := NewField().Set(p2.x).Add(p2.z)
 
 	x.Mul(y)
@@ -134,7 +134,7 @@ func (p1 *Point) Add(other kyokusen.Point) kyokusen.Point {
 	z.Mul(t4)
 	z.Add(t0)
 
-	return nil
+	return &Point{x, y, z, false}
 }
 
 func (p *Point) Sub(other kyokusen.Point) kyokusen.Point {

@@ -1,7 +1,6 @@
 package secp256k1
 
 import (
-	"fmt"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -30,8 +29,53 @@ func (*Point) Generate(r *rand.Rand, size int) reflect.Value {
 
 func TestPointEqualToItself(t *testing.T) {
 	err := quick.Check(func(a *Point) bool {
-		fmt.Println("a", a)
 		return a.Equal(a)
+	}, &quick.Config{})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestIdentityIsIdentity(t *testing.T) {
+	if !NewPoint().IsIdentity() {
+		t.Error("NewPoint() didn't return identity point")
+	}
+}
+
+func TestPointAdditionCommutative(t *testing.T) {
+	err := quick.Check(func(a *Point, b *Point) bool {
+		way1 := a.Add(b)
+		way2 := b.Add(a)
+		return way1.Equal(way2)
+	}, &quick.Config{})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestPointAddIdentityDoesNothing(t *testing.T) {
+	err := quick.Check(func(a *Point) bool {
+		return a.Add(NewPoint()).Equal(a)
+	}, &quick.Config{})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestPointSelfSubtractionIsIdentity(t *testing.T) {
+	err := quick.Check(func(a *Point) bool {
+		return a.Sub(a).IsIdentity()
+	}, &quick.Config{})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestPointSubtractionIsAddNegated(t *testing.T) {
+	err := quick.Check(func(a *Point, b *Point) bool {
+		way1 := a.Sub(b)
+		way2 := a.Add(b.Negate())
+		return way1.Equal(way2)
 	}, &quick.Config{})
 	if err != nil {
 		t.Error(err)
