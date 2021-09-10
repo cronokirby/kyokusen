@@ -10,6 +10,10 @@ type Point struct {
 	x *Field
 	y *Field
 	z *Field
+	// This is a flag indicating that this Point's value is normalized. This
+	// should be set exclusively based on which methods are called on a point,
+	// making it okay to branch on this value.
+	normalized bool
 }
 
 // castPoint converts a point implementing the generic interface to this specific type.
@@ -25,6 +29,9 @@ func castPoint(p kyokusen.Point) *Point {
 }
 
 func (p *Point) normalize() {
+	if p.normalized {
+		return
+	}
 	// We start (X : Y : Z).
 	// If Z != 0, then we want to get (X/Z : Y/Z : 1)
 	// If Z == 1, then we want to get (0 : 1 : 0)
@@ -39,6 +46,8 @@ func (p *Point) normalize() {
 	p.y.CondAssign(zZero, one)
 	// If Z != 0, then Z needs to become 1.
 	p.z.CondAssign(1^zZero, one)
+	// The result is now normalized.
+	p.normalized = true
 }
 
 func (*Point) MarshalBinary() ([]byte, error) {
