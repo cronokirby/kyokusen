@@ -5,9 +5,11 @@ import (
 	"reflect"
 	"testing"
 	"testing/quick"
+
+	"github.com/cronokirby/kyokusen"
 )
 
-func (*Point) Generate(r *rand.Rand, size int) reflect.Value {
+func randomPoint(r *rand.Rand, size int) *Point {
 	// The idea is to generate x coordinates until we end up on the curve,
 	// or give up and return the identity point.
 
@@ -22,9 +24,13 @@ func (*Point) Generate(r *rand.Rand, size int) reflect.Value {
 		}
 		y := fx.Sqrt()
 		z := NewField().SetUint64(1)
-		return reflect.ValueOf(&Point{x, y, z, true})
+		return &Point{x, y, z, true}
 	}
-	return reflect.ValueOf(NewPoint())
+	return NewPoint()
+}
+
+func (*Point) Generate(r *rand.Rand, size int) reflect.Value {
+	return reflect.ValueOf(randomPoint(r, size))
 }
 
 func TestPointEqualToItself(t *testing.T) {
@@ -79,5 +85,13 @@ func TestPointSubtractionIsAddNegated(t *testing.T) {
 	}, &quick.Config{})
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func BenchmarkPointAddition(t *testing.B) {
+	r := rand.New(rand.NewSource(0))
+	var point kyokusen.Point = randomPoint(r, 32)
+	for i := 0; i < t.N; i++ {
+		point = point.Add(point)
 	}
 }
