@@ -75,9 +75,13 @@ func (*Point) Sub(kyokusen.Point) kyokusen.Point {
 	return nil
 }
 
-func (*Point) Negate() kyokusen.Point {
+func (p *Point) Negate() kyokusen.Point {
 	// TODO: Implement
-	return nil
+	return &Point{
+		x: NewField().Set(p.x),
+		y: NewField().Set(p.y).Negate(),
+		z: NewField().Set(p.z),
+	}
 }
 
 func (p1 *Point) Equal(other kyokusen.Point) bool {
@@ -87,9 +91,9 @@ func (p1 *Point) Equal(other kyokusen.Point) bool {
 	return (p1.x.Eq(p2.x) & p1.y.Eq(p2.y) & p1.z.Eq(p2.z)) == 1
 }
 
-func (*Point) IsIdentity() bool {
-	// TODO: Implement
-	return false
+func (p *Point) IsIdentity() bool {
+	// Whenever Z == 0, this is the point at infinity.
+	return p.z.EqZero() == 1
 }
 
 func (*Point) XScalar() kyokusen.Scalar {

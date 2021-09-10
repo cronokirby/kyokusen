@@ -66,6 +66,12 @@ func (z *Field) Sub(a *Field) *Field {
 	return z
 }
 
+// Sub calculates z <- -z, returning z.
+func (z *Field) Negate() *Field {
+	z.nat.ModNeg(&z.nat, p)
+	return z
+}
+
 // Mul calculates z <- z * a, returning z.
 func (z *Field) Mul(a *Field) *Field {
 	z.nat.ModMul(&z.nat, &a.nat, p)
