@@ -43,6 +43,12 @@ func (z *Field) SetUint64(x uint64) *Field {
 	return z
 }
 
+// CondAssign sets z <- x, only if yes = 1, in constant-time.
+func (z *Field) CondAssign(yes saferith.Choice, x *Field) *Field {
+	z.nat.CondAssign(yes, &x.nat)
+	return z
+}
+
 // String returns a string representation of this field element.
 func (z *Field) String() string {
 	return z.nat.String()
@@ -80,6 +86,11 @@ func (z *Field) Invert() *Field {
 // Eq checks if two field values are equal, in constant-time.
 func (z *Field) Eq(x *Field) saferith.Choice {
 	return z.nat.Eq(&x.nat)
+}
+
+// Eq checks if a field value is equal to 0, in constant-time.
+func (z *Field) EqZero() saferith.Choice {
+	return z.nat.EqZero()
 }
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
