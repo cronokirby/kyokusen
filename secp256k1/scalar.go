@@ -18,6 +18,18 @@ type Scalar struct {
 	nat saferith.Nat
 }
 
+// castScalar converts a scalar implementing the generic interface to this specific type.
+//
+// Since implementors of the Scalar interface are only expected to work with
+// their own type, we are allowed to cast the interface at the beginning of our methods.
+func castScalar(s kyokusen.Scalar) *Scalar {
+	casted, ok := s.(*Scalar)
+	if !ok {
+		panic("failed to cast type to *secp256k1.Scalar")
+	}
+	return casted
+}
+
 // MarshalBinary returns the contents of this scalar as Big Endian bytes.
 func (s *Scalar) MarshalBinary() ([]byte, error) {
 	// This makes sure that the size of the scalar is padded to the right size.
@@ -43,39 +55,51 @@ func (s *Scalar) Curve() kyokusen.Curve {
 }
 
 func (s1 *Scalar) Add(other kyokusen.Scalar) kyokusen.Scalar {
-	return nil
+	s2 := castScalar(other)
+	s1.nat.ModAdd(&s1.nat, &s2.nat, q)
+	return s1
 }
 
 func (s1 *Scalar) Sub(other kyokusen.Scalar) kyokusen.Scalar {
-	return nil
+	s2 := castScalar(other)
+	s1.nat.ModSub(&s1.nat, &s2.nat, q)
+	return s1
 }
 
 func (s1 *Scalar) Negate() kyokusen.Scalar {
-	return nil
+	s1.nat.ModNeg(&s1.nat, q)
+	return s1
 }
 
 func (s1 *Scalar) Mul(other kyokusen.Scalar) kyokusen.Scalar {
-	return nil
+	s2 := castScalar(other)
+	s1.nat.ModMul(&s1.nat, &s2.nat, q)
+	return s1
 }
 
 func (s1 *Scalar) Invert() kyokusen.Scalar {
-	return nil
+	s1.nat.ModInverse(&s1.nat, q)
+	return s1
 }
 
 func (s1 *Scalar) Equal(other kyokusen.Scalar) bool {
-	return false
+	s2 := castScalar(other)
+	return s1.nat.Eq(&s2.nat) == 1
 }
 
 func (s1 *Scalar) IsZero() bool {
-	return false
+	return s1.nat.EqZero() == 1
 }
 
 func (s1 *Scalar) Set(other kyokusen.Scalar) kyokusen.Scalar {
-	return nil
+	s2 := castScalar(other)
+	s1.nat.SetNat(&s2.nat)
+	return s1
 }
 
 func (s1 *Scalar) SetNat(other *saferith.Nat) kyokusen.Scalar {
-	return nil
+	s1.nat.Mod(other, q)
+	return s1
 }
 
 func (s1 *Scalar) Act(kyokusen.Point) kyokusen.Point {
