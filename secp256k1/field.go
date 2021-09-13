@@ -6,6 +6,9 @@ import (
 	"github.com/cronokirby/saferith"
 )
 
+// fieldBytes is the number of bytes in our encoding of a field element.
+const fieldBytes = 32
+
 // p is the modulus for the field used in secp256k1.
 var p *saferith.Modulus
 
@@ -53,6 +56,12 @@ func (z *Field) SetUint64(x uint64) *Field {
 func (z *Field) CondAssign(yes saferith.Choice, x *Field) *Field {
 	z.nat.CondAssign(yes, &x.nat)
 	return z
+}
+
+// CondNegate sets z <- -z, only if yes = 1, in constant-time.
+func (z *Field) CondNegate(yes saferith.Choice) *Field {
+	negated := NewField().Set(z).Negate()
+	return z.CondAssign(yes, negated)
 }
 
 // String returns a string representation of this field element.
@@ -159,4 +168,9 @@ func (z *Field) HasSqrt() saferith.Choice {
 func (z *Field) Sqrt() *Field {
 	z.nat.ModSqrt(&z.nat, p)
 	return z
+}
+
+// IsEven returns a choice indicating if a field element is even.
+func (z *Field) IsEven() saferith.Choice {
+	return saferith.Choice(z.nat.Byte(0) & 1)
 }

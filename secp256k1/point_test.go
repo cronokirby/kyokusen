@@ -88,6 +88,26 @@ func TestPointSubtractionIsAddNegated(t *testing.T) {
 	}
 }
 
+func TestPointMarshalBinaryRoundtrip(t *testing.T) {
+	err := quick.Check(func(a *Point) bool {
+		if a.IsIdentity() {
+			return true
+		}
+		data, err := a.MarshalBinary()
+		if err != nil {
+			return false
+		}
+		a2 := NewPoint()
+		if err := a2.UnmarshalBinary(data); err != nil {
+			return false
+		}
+		return a.Equal(a2)
+	}, &quick.Config{})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func BenchmarkPointAddition(t *testing.B) {
 	r := rand.New(rand.NewSource(0))
 	var point kyokusen.Point = randomPoint(r, 32)

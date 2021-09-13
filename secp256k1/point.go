@@ -1,9 +1,12 @@
 package secp256k1
 
 import (
+	"crypto/subtle"
+	"errors"
 	"fmt"
 
 	"github.com/cronokirby/kyokusen"
+	"github.com/cronokirby/saferith"
 )
 
 // The b constant for the elliptic curve
@@ -71,13 +74,41 @@ func (p *Point) String() string {
 	return fmt.Sprintf("[%v : %v : %v]", p.x, p.y, p.z)
 }
 
-func (*Point) MarshalBinary() ([]byte, error) {
-	// TODO: Implement
-	return nil, nil
+// MarshalBinary marshals a Secp256k1 point in the same way as Bitcoin does.
+//
+// The point at infinity can't be marshalled.
+func (p *Point) MarshalBinary() ([]byte, error) {
+	p.normalize()
+	if p.IsIdentity() {
+		return nil, errors.New("secp256k1: can't marshal point at infinity")
+	}
+	xBytes, err := p.x.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+	out := make([]byte, 0, 1+len(xBytes))
+	out = append(out, 3-byte(p.y.IsEven()))
+	out = append(out, xBytes...)
+	return out, nil
 }
 
-func (*Point) UnmarshalBinary(data []byte) error {
-	// TODO: Implement
+// UnmarshalBinary unmarshals a Secp256k1 point from Bitcoin's encoding.
+func (p *Point) UnmarshalBinary(data []byte) error {
+	if len(data) != 1+fieldBytes {
+		return errors.New("secp256k1.UnmarshalBinary: invalid data")
+	}
+	if err := p.x.UnmarshalBinary(data[1:]); err != nil {
+		return err
+	}
+	p.y.Set(p.x).Square().Mul(p.x).AddU64(b)
+	if p.y.HasSqrt() != 1 {
+		return errors.New("secp256k1.UnmarshalBinary: invalid point")
+	}
+	p.y.Sqrt()
+	yShouldBeEven := saferith.Choice(subtle.ConstantTimeByteEq(data[0], 2))
+	p.y.CondNegate(p.y.IsEven() ^ yShouldBeEven)
+	p.z.SetUint64(1)
+	p.normalized = true
 	return nil
 }
 
