@@ -18,6 +18,10 @@ type Scalar struct {
 	nat saferith.Nat
 }
 
+func NewScalar() *Scalar {
+	return &Scalar{}
+}
+
 // castScalar converts a scalar implementing the generic interface to this specific type.
 //
 // Since implementors of the Scalar interface are only expected to work with

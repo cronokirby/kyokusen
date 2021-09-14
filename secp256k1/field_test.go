@@ -14,7 +14,8 @@ func randomFieldElement(r *rand.Rand, size int) *Field {
 	for i := 0; i < size && i < len(data); i++ {
 		data[len(data)-i-1] = byte(r.Uint32())
 	}
-	_ = out.UnmarshalBinary(data)
+	out.nat.SetBytes(data)
+	out.nat.Mod(&out.nat, p)
 	return out
 }
 
