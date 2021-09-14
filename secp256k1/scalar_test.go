@@ -91,3 +91,25 @@ func TestScalarMarshalRoundtrip(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestScalarActOneIsIdentity(t *testing.T) {
+	err := quick.Check(func(p *Point) bool {
+		p1 := NewScalar().SetNat(new(saferith.Nat).SetUint64(1)).Act(p)
+		return p1.Equal(p)
+	}, &quick.Config{})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestScalarActIsAdditive(t *testing.T) {
+	err := quick.Check(func(a, b *Scalar, p *Point) bool {
+		ap := a.Act(p)
+		bp := b.Act(p)
+		abp := NewScalar().Set(a).Add(b).Act(p)
+		return abp.Equal(ap.Add(bp))
+	}, &quick.Config{Rand: rand.New(rand.NewSource(0))})
+	if err != nil {
+		t.Error(err)
+	}
+}

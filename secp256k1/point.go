@@ -153,7 +153,7 @@ func (p1 *Point) Add(other kyokusen.Point) kyokusen.Point {
 	t1.Sub(t2)
 	y.MulU64(3 * b)
 
-	x.Mul(t4)
+	x.Set(y).Mul(t4)
 	t2.Set(t3).Mul(t1)
 	x.Negate().Add(t2)
 
@@ -173,7 +173,6 @@ func (p *Point) Sub(other kyokusen.Point) kyokusen.Point {
 }
 
 func (p *Point) Negate() kyokusen.Point {
-	// TODO: Implement
 	return &Point{
 		x: NewField().Set(p.x),
 		y: NewField().Set(p.y).Negate(),
@@ -196,4 +195,12 @@ func (p *Point) IsIdentity() bool {
 func (*Point) XScalar() kyokusen.Scalar {
 	// TODO: Implement
 	return nil
+}
+
+// CondAssign conditionally modifies the contents of a point.
+func (p *Point) CondAssign(yes saferith.Choice, other *Point) *Point {
+	p.x.CondAssign(yes, other.x)
+	p.y.CondAssign(yes, other.y)
+	p.z.CondAssign(yes, other.z)
+	return p
 }

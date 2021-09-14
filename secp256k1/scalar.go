@@ -18,6 +18,10 @@ type Scalar struct {
 	nat saferith.Nat
 }
 
+func (s *Scalar) String() string {
+	return s.nat.String()
+}
+
 func NewScalar() *Scalar {
 	return &Scalar{}
 }
@@ -106,8 +110,17 @@ func (s1 *Scalar) SetNat(other *saferith.Nat) kyokusen.Scalar {
 	return s1
 }
 
-func (s1 *Scalar) Act(kyokusen.Point) kyokusen.Point {
-	return nil
+func (s *Scalar) Act(other kyokusen.Point) kyokusen.Point {
+	bytes := s.nat.Bytes()
+	acc := NewPoint()
+	for _, b := range bytes {
+		for i := 7; i >= 0; i-- {
+			acc = acc.Add(acc).(*Point)
+			added := acc.Add(other).(*Point)
+			acc.CondAssign(saferith.Choice((b>>i)&1), added)
+		}
+	}
+	return acc
 }
 
 func (s1 *Scalar) ActOnBase() kyokusen.Point {

@@ -59,6 +59,17 @@ func TestPointAdditionCommutative(t *testing.T) {
 	}
 }
 
+func TestPointAdditionAssociative(t *testing.T) {
+	err := quick.Check(func(a, b, c *Point) bool {
+		way1 := a.Add(b.Add(c))
+		way2 := a.Add(b).Add(c)
+		return way1.Equal(way2)
+	}, &quick.Config{})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func TestPointAddIdentityDoesNothing(t *testing.T) {
 	err := quick.Check(func(a *Point) bool {
 		return a.Add(NewPoint()).Equal(a)
