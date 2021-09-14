@@ -123,6 +123,6 @@ func (s *Scalar) Act(other kyokusen.Point) kyokusen.Point {
 	return acc
 }
 
-func (s1 *Scalar) ActOnBase() kyokusen.Point {
-	return nil
+func (s *Scalar) ActOnBase() kyokusen.Point {
+	return s.Act(basePoint)
 }
