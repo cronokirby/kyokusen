@@ -124,3 +124,13 @@ func BenchmarkAct(b *testing.B) {
 		s.Act(p)
 	}
 }
+
+func BenchmarkActOnBase(b *testing.B) {
+	b.StopTimer()
+	r := rand.New(rand.NewSource(0))
+	s := randomScalar(r, 100)
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		s.ActOnBase()
+	}
+}
