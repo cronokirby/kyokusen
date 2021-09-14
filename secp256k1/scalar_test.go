@@ -108,8 +108,19 @@ func TestScalarActIsAdditive(t *testing.T) {
 		bp := b.Act(p)
 		abp := NewScalar().Set(a).Add(b).Act(p)
 		return abp.Equal(ap.Add(bp))
-	}, &quick.Config{Rand: rand.New(rand.NewSource(0))})
+	}, &quick.Config{})
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func BenchmarkAct(b *testing.B) {
+	b.StopTimer()
+	r := rand.New(rand.NewSource(0))
+	s := randomScalar(r, 100)
+	p := randomPoint(r, 100)
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		s.Act(p)
 	}
 }
